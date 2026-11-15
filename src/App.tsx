@@ -42,6 +42,8 @@ import {
   Film,
   BriefcaseBusiness,
   CircleDollarSign,
+  Users,
+  LogOut,
 } from "lucide-react";
 import {
   applyTransaction,
@@ -216,8 +218,20 @@ function downloadFile(content: string, type: string, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-export default function App() {
-  const [initial] = useState(loadState);
+type AppProps = {
+  onConnect?: () => void;
+  cloud?: {
+    initialState: AppState;
+    onChange: (state: AppState) => void;
+    status: string;
+    onFamily: () => void;
+    onSignOut: () => Promise<void>;
+  };
+};
+export default function App({ cloud, onConnect }: AppProps) {
+  const [initial] = useState(() =>
+    cloud ? { data: cloud.initialState, issue: "" } : loadState(),
+  );
   const [data, setData] = useState(initial.data);
   const [storageIssue, setStorageIssue] = useState(initial.issue);
   const [view, setView] = useState<View>("overview");
@@ -244,6 +258,10 @@ export default function App() {
   const [confirmReset, setConfirmReset] = useState(false);
   const persistAllowed = useRef(!initial.issue);
   useEffect(() => {
+    if (cloud) {
+      cloud.onChange(data);
+      return;
+    }
     if (!persistAllowed.current) return;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -256,6 +274,7 @@ export default function App() {
   }, [data]);
   useEffect(() => {
     const onStorage = (e: StorageEvent) => {
+      if (cloud) return;
       if (e.key === STORAGE_KEY && e.newValue) {
         try {
           const s: unknown = JSON.parse(e.newValue);
@@ -834,9 +853,25 @@ export default function App() {
             </span>
           </div>
           <div className="topbar-right">
+            <button
+              className="button secondary family-open"
+              onClick={cloud ? cloud.onFamily : onConnect}
+            >
+              <Users size={16} />
+              <span>{cloud ? "Family" : "Family accounts"}</span>
+            </button>
+            {cloud && (
+              <button
+                className="icon-button cloud-signout"
+                onClick={() => void cloud.onSignOut()}
+                aria-label="Sign out of family account"
+              >
+                <LogOut size={17} />
+              </button>
+            )}
             <span className="local-badge">
               <span />
-              Saved on this device
+              {cloud ? cloud.status : "Saved on this device"}
             </span>
             <button
               className="icon-button"
@@ -1572,7 +1607,7 @@ export default function App() {
                   setData({
                     ...data,
                     name: String(f.get("name")).trim() || "Friend",
-                    currency: String(f.get("currency")),
+                    currency: cloud ? data.currency : String(f.get("currency")),
                   });
                   close();
                   setToast("Your preferences are saved");
@@ -1590,7 +1625,11 @@ export default function App() {
                 </label>
                 <label>
                   Display currency
-                  <select name="currency" defaultValue={data.currency}>
+                  <select
+                    name="currency"
+                    defaultValue={data.currency}
+                    disabled={!!cloud}
+                  >
                     <option value="USD">US Dollar · USD</option>
                     <option value="HKD">Hong Kong Dollar · HKD</option>
                     <option value="EUR">Euro · EUR</option>
@@ -1598,7 +1637,9 @@ export default function App() {
                   </select>
                 </label>
                 <p className="field-hint">
-                  Changes the currency label only. Amounts are not converted.
+                  {cloud
+                    ? "Your family uses one currency for shared totals. Amounts are not converted."
+                    : "Changes the currency label only. Amounts are not converted."}
                 </p>
                 <button className="button primary full-width">
                   Save preferences
@@ -1608,8 +1649,9 @@ export default function App() {
               <div className="settings-section">
                 <h3>Your data stays with you</h3>
                 <p className="muted">
-                  Saved in this browser, on this device. Cross-device sync and
-                  bank connections are not enabled.
+                  {cloud
+                    ? "Your personal account syncs to Supabase. Your family can view your entries; only you can change them. No bank connection is enabled."
+                    : "Saved in this browser, on this device. Cross-device sync and bank connections are not enabled."}
                 </p>
                 <div className="settings-buttons">
                   <button
@@ -1637,13 +1679,23 @@ export default function App() {
                         if (!file) return;
                         try {
                           const s: unknown = JSON.parse(await file.text());
+                          if (
+                            cloud &&
+                            validState(s) &&
+                            (s.currency !== data.currency || s.demo)
+                          )
+                            throw new Error(
+                              "Restore personal data in your family currency only; sample data cannot be uploaded.",
+                            );
                           if (!validState(s))
                             throw new Error(
                               "This file is not a valid Jam backup.",
                             );
                           if (
                             !window.confirm(
-                              "Replace the data on this device with this backup?",
+                              cloud
+                                ? "Replace your account ledger with this backup?"
+                                : "Replace the data on this device with this backup?",
                             )
                           )
                             return;
@@ -1668,7 +1720,7 @@ export default function App() {
                   <div className="reset-confirm">
                     <strong>Start with a clean slate?</strong>
                     <p>
-                      This removes all transactions and goals on this device.
+                      This removes all transactions and goals in this workspace.
                       Download a backup first if you want to keep them.
                     </p>
                     <div className="settings-buttons">
@@ -1814,8 +1866,9 @@ export default function App() {
               <div className="gentle-note">
                 <ShieldCheck size={18} />
                 <p>
-                  Works offline after your first visit. Your data stays in this
-                  browser; export a backup before switching browsers or devices.
+                  {cloud
+                    ? "Family accounts need a connection to load and save. If saving fails, export a backup before closing this tab."
+                    : "Works offline after your first visit. Your data stays in this browser; export a backup before switching browsers or devices."}
                 </p>
               </div>
             </div>

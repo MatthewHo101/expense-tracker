@@ -1,6 +1,6 @@
 # Jam 🫙
 
-Your money, a little clearer. A personal expense tracker built with **TypeScript, React, and Vite**, with a responsive desktop dashboard and a mobile interface inspired by the supplied mint-green finance reference.
+Your money, a little clearer. A TypeScript expense tracker for your own spending and your whole family's picture, with a responsive desktop dashboard and an installable phone interface.
 
 ## Run locally
 
@@ -11,51 +11,58 @@ npm ci
 npm run dev
 ```
 
-Open the URL printed by Vite. To check and build:
-
 ```bash
 npm test
 npm run build
 npm run preview
 ```
 
-## What works
+## Personal and family views
 
-- Add income and expenses with categories, dates, and notes; view and delete transactions.
-- Search, filter by transaction type, and browse months.
-- See your available balance and actual weekly, monthly, and quarterly cash flow.
-- Set a monthly budget and see remaining spending capacity.
-- Create savings goals, record top ups and withdrawals, and see progress.
-- Export the selected month's transactions as CSV; export and restore full JSON backups.
-- Customize your name and display currency (USD, HKD, EUR, GBP).
-- Install as a Progressive Web App on supported phones and desktops; offline app shell after the first visit.
-- GitHub Actions checks financial calculations, backup validation, TypeScript, and the production build.
+- Email/password sign-in, email confirmation, and password reset through Supabase Auth.
+- Each member has **My expenses** and **Family** views. Everyone in the family can read the family's entries; each member can change only their own ledger.
+- Family filters by person, month, and category; per-person spending, combined totals, shared monthly budget, and export.
+- The family owner creates email-bound, single-use invitation links and sets the shared budget.
+- Personal income/expenses, categories, notes, cash-flow charts, budgets, savings goals, top ups, withdrawals, CSV export, and JSON backup/restore.
+- One family per account and one fixed family currency (USD, HKD, EUR, or GBP).
+- Cross-device cloud saving with revision checks and a family refresh every 15 seconds/on focus.
 
-## Your data
+**Backend setup is required:** run [`supabase/setup.sql`](supabase/setup.sql) in Supabase SQL Editor and follow [`supabase/README.md`](supabase/README.md) for Auth URLs, email delivery, and hosting access. The app shows setup guidance if the tables do not exist.
 
-This first release is **local-first**: records are stored in this browser's `localStorage` under `mint-expenses-v1`. No account, server database, bank connection, or cross-device sync is configured. The app plainly labels this in the interface. Different browsers, devices, and origins have separate data. Clearing site data removes your records. Export a backup before changing devices or browsers.
+## Browser-only workspace
 
-The initial sample workspace has $14,000 income, $1,996 expenses, and $12,004 available. Existing sample savings are starting balances, separate from the transaction history. **Settings → Clear sample data & start fresh** gives you an empty workspace.
+Choose **Continue with this device's local workspace** to use the original local-first mode. Its data stays in this browser under the legacy `mint-expenses-v1` key. It begins with sample data ($14,000 income, $1,996 expenses, $12,004 available). Use Settings to clear samples and start fresh.
 
-All money is stored as integer cents. Savings transfers affect available balance and goal balances but do not count toward expenses. Savings are manual records, not actual bank transfers. Changing display currency relabels values; it does not convert them. The budget is one recurring monthly limit. Charts and CSV exports use the selected month; the available balance includes all recorded transactions.
+Browser data is never automatically uploaded. To migrate real records, open **Family → Import this device's data**. This explicitly replaces only the signed-in account's ledger. Sample data and different currencies are refused. Export a backup before importing or switching browsers.
+
+## Data and access
+
+The Supabase URL and publishable key in `src/supabase.ts` are public client configuration. No service-role key or database password is used by the app. PostgreSQL row-level security limits reads to family members, and authenticated database functions authorize every write. Members cannot supply another user's ID to save a ledger. Invitation tokens are stored as hashes and are bound to a confirmed email and a seven-day expiry.
+
+Conflicting writes from two devices are rejected rather than silently overwriting changes. Export a backup before discarding an unsaved conflict. Offline cloud edits stay in the open session until saving succeeds; keep the tab open or export a backup if saving fails. Cloud ledgers are not cached in the browser-only workspace. Signing out clears the in-memory workspace.
+
+Money is stored in integer cents. Savings transfers affect available balance and goal balances, but do not count as expenses. Savings are manually recorded and do not move bank funds. The personal budget is separate from the owner's shared family budget. The available personal balance covers all transactions; reports use the selected month. Browser-only currency changes relabel values without conversion; family currency is fixed.
+
+Hosted Site access is separate from Supabase access. The existing Site stays private until the owner explicitly changes its audience. To allow email-only family access, the login page must be reachable by the family; the database's RLS still protects their records.
 
 ## Install on a phone
 
-Use an HTTPS deployment. On iPhone, open it in Safari, then **Share → Add to Home Screen**. On Android, open it in Chrome, then **Install app** / **Add to Home screen**. Use the download icon or “Take Jam with you” for instructions. This is an installable web app, not an App Store or Play Store release.
+Use an HTTPS deployment. On iPhone, use Safari → Share → Add to Home Screen. On Android, use Chrome → Install app / Add to Home screen. This is a PWA, not an App Store/Play Store release. The application shell and browser-only workspace work offline after the first visit; family account loading and saving require a connection.
 
 ## Project layout
 
-- `src/App.tsx`: responsive views, accessible native dialogs, entry forms, and local persistence.
-- `src/domain.ts`: typed financial model, exact-cent parsing, reports, and CSV serialization.
-- `src/domain.test.ts`: meaningful ledger and data validation tests.
-- `src/styles.css`: mint palette, charts, savings rings, desktop sidebar, and mobile navigation.
-- `vite.config.ts`: React and PWA production configuration.
-- `.openai/hosting.json`: private Sites deployment identity and static output directory.
+- `src/App.tsx`: personal workspace and browser-local mode.
+- `src/CloudApp.tsx`: authentication, account sync, invitations, onboarding, family dashboard.
+- `src/family.ts`: typed family reporting and ledger validation.
+- `src/domain.ts`: exact-cent financial model and CSV export.
+- `supabase/setup.sql`: idempotent database setup, RLS, and authenticated functions.
+- `src/database.test.ts`: PostgreSQL authorization/concurrency tests using PGlite.
+- `src/domain.test.ts`, `src/family.test.ts`: financial calculations and family reports.
+- `vite.config.ts`: React, bundle splitting, and PWA configuration.
+- `.openai/hosting.json`: existing private Sites identity and static `dist/` output.
+
+GitHub Actions runs tests and the TypeScript/production build. Tests do not create accounts or send emails in the live Supabase project.
 
 ## Hosting
 
-`npm run build` creates a static `dist/` directory. Deploy it to an HTTPS static host. The generated PWA service worker precaches the application assets. The included Sites configuration belongs to this project's deployment; remove its `project_id` before creating an independent Site from a fork.
-
-## Next step: sync
-
-A future release can add Supabase Auth, a PostgreSQL database, per-user row-level security, and explicit local-data migration. Do not put private service keys in this client app. Cloud sync and sign-in require a configured backend before they can work.
+Build with `npm run build` and deploy `dist/` to an HTTPS static host. Supabase Auth redirect URLs must match the deployment. The included Sites ID belongs to this project's existing deployment; remove it before creating an independent Site from a fork.
