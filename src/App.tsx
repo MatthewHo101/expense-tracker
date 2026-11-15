@@ -60,6 +60,7 @@ import {
   validState,
 } from "./domain";
 import type { AppState, Category, Goal, Transaction } from "./domain";
+import JamLogo from "./JamLogo";
 
 type View = "overview" | "transactions" | "insights" | "savings";
 type Modal =
@@ -71,6 +72,7 @@ type Modal =
   | "detail"
   | "install"
   | null;
+// Keep the original key so existing records remain available after rebranding.
 const STORAGE_KEY = "mint-expenses-v1";
 const categoryIcons = {
   "Food & drink": Utensils,
@@ -408,7 +410,7 @@ export default function App() {
     downloadFile(
       toCsv(monthRows),
       "text/csv;charset=utf-8",
-      `mint-transactions-${month}.csv`,
+      `jam-transactions-${month}.csv`,
     );
     setToast("Transactions exported");
   }
@@ -768,9 +770,9 @@ export default function App() {
           }}
         >
           <span className="brand-mark">
-            <Sprout size={25} />
+            <JamLogo size={25} />
           </span>
-          mint<span className="brand-period">.</span>
+          jam<span className="brand-period">.</span>
         </a>
         <span className="nav-caption">YOUR PERSONAL SPACE</span>
         <nav aria-label="Main navigation">
@@ -804,7 +806,7 @@ export default function App() {
             </h3>
             <p>Your money journey starts with a little clarity.</p>
             <button className="text-button" onClick={() => open("install")}>
-              Take Mint with you <ArrowUpRight size={14} />
+              Take Jam with you <ArrowUpRight size={14} />
             </button>
           </div>
           <button className="profile" onClick={() => open("settings")}>
@@ -839,7 +841,7 @@ export default function App() {
             <button
               className="icon-button"
               onClick={() => open("install")}
-              aria-label="Install Mint on your phone"
+              aria-label="Install Jam on your phone"
             >
               <Download size={19} />
             </button>
@@ -860,7 +862,7 @@ export default function App() {
                 downloadFile(
                   JSON.stringify(data, null, 2),
                   "application/json",
-                  "mint-backup.json",
+                  "jam-backup.json",
                 )
               }
             >
@@ -932,7 +934,7 @@ export default function App() {
                   <div className="wallet-orbit" />
                   <Leaf className="wallet-leaf" size={115} strokeWidth={0.8} />
                   <div className="mini-card">
-                    <span>mint.</span>
+                    <span>jam.</span>
                     <span className="chip" />
                     <span>•••• &nbsp; 5882</span>
                   </div>
@@ -1184,7 +1186,7 @@ export default function App() {
               <div className="gentle-note">
                 <ShieldCheck size={17} />
                 <p>
-                  Manually track your savings here. Mint doesn’t connect to or
+                  Manually track your savings here. Jam doesn’t connect to or
                   move money from your bank.
                 </p>
               </div>
@@ -1251,7 +1253,7 @@ export default function App() {
         )}
         <footer className="page-footer">
           <span>
-            <Sprout size={14} />A little clarity goes a long way.
+            <JamLogo size={14} />A little clarity goes a long way.
           </span>
           <button onClick={() => open("install")}>
             Made for your everyday <ArrowUpRight size={13} />
@@ -1323,7 +1325,7 @@ export default function App() {
                     : modal === "settings"
                       ? "Make yourself at home."
                       : modal === "install"
-                        ? "Mint, on the go."
+                        ? "Jam, on the go."
                         : "Transaction details"
           }
           close={close}
@@ -1616,7 +1618,7 @@ export default function App() {
                       downloadFile(
                         JSON.stringify(data, null, 2),
                         "application/json",
-                        "mint-backup.json",
+                        "jam-backup.json",
                       )
                     }
                   >
@@ -1637,7 +1639,7 @@ export default function App() {
                           const s: unknown = JSON.parse(await file.text());
                           if (!validState(s))
                             throw new Error(
-                              "This file is not a valid Mint backup.",
+                              "This file is not a valid Jam backup.",
                             );
                           if (
                             !window.confirm(
@@ -1776,7 +1778,7 @@ export default function App() {
           {modal === "install" && (
             <div className="install-content">
               <div className="install-icon">
-                <Sprout size={46} />
+                <JamLogo size={46} />
               </div>
               <p>Your everyday money companion, right on your home screen.</p>
               {installPrompt ? (
@@ -1788,7 +1790,7 @@ export default function App() {
                     setInstallPrompt(null);
                   }}
                 >
-                  Install Mint
+                  Install Jam
                   <Download size={17} />
                 </button>
               ) : (
@@ -1796,14 +1798,14 @@ export default function App() {
                   <div className="install-step">
                     <span>1</span>
                     <p>
-                      <strong>On iPhone</strong>Open Mint in Safari, tap Share,
+                      <strong>On iPhone</strong>Open Jam in Safari, tap Share,
                       then “Add to Home Screen”.
                     </p>
                   </div>
                   <div className="install-step">
                     <span>2</span>
                     <p>
-                      <strong>On Android</strong>Open Mint in Chrome, tap the
+                      <strong>On Android</strong>Open Jam in Chrome, tap the
                       menu, then “Install app” or “Add to Home screen”.
                     </p>
                   </div>

@@ -1,4 +1,4 @@
-# Mint 🌱
+# Jam 🫙
 
 Your money, a little clearer. A personal expense tracker built with **TypeScript, React, and Vite**, with a responsive desktop dashboard and a mobile interface inspired by the supplied mint-green finance reference.
 
@@ -41,7 +41,7 @@ All money is stored as integer cents. Savings transfers affect available balance
 
 ## Install on a phone
 
-Use an HTTPS deployment. On iPhone, open it in Safari, then **Share → Add to Home Screen**. On Android, open it in Chrome, then **Install app** / **Add to Home screen**. Use the download icon or “Take Mint with you” for instructions. This is an installable web app, not an App Store or Play Store release.
+Use an HTTPS deployment. On iPhone, open it in Safari, then **Share → Add to Home Screen**. On Android, open it in Chrome, then **Install app** / **Add to Home screen**. Use the download icon or “Take Jam with you” for instructions. This is an installable web app, not an App Store or Play Store release.
 
 ## Project layout
 

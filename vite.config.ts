@@ -6,10 +6,10 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["icon.svg", "icon-192.png", "icon-512.png"],
+      includeAssets: ["jam-icon.svg", "jam-icon-192.png", "jam-icon-512.png"],
       manifest: {
-        name: "Mint Expense Tracker",
-        short_name: "Mint",
+        name: "Jam Expense Tracker",
+        short_name: "Jam",
         description: "Your money, a little clearer.",
         theme_color: "#f5f8f6",
         background_color: "#f5f8f6",
@@ -17,19 +17,19 @@ export default defineConfig({
         start_url: "/",
         icons: [
           {
-            src: "/icon-192.png",
+            src: "/jam-icon-192.png",
             sizes: "192x192",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/icon-512.png",
+            src: "/jam-icon-512.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "any",
           },
           {
-            src: "/icon-maskable.png",
+            src: "/jam-icon-maskable.png",
             sizes: "512x512",
             type: "image/png",
             purpose: "maskable",
